@@ -1,0 +1,11 @@
+.dart_tool/
+.flutter-sdk/
+.pub-cache/
+build/
+*.sqlite
+.env
+.tool-data/
+.idea/
+*.iml
+.flutter-plugins-dependencies
+artifacts/

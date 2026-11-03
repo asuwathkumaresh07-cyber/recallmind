@@ -1,0 +1,10 @@
+analyzer:
+  exclude:
+    - .flutter-sdk/**
+    - .pub-cache/**
+    - .tool-data/**
+    - build/**
+    - android/**
+    - web/**
+    - windows/**
+include: package:flutter_lints/flutter.yaml

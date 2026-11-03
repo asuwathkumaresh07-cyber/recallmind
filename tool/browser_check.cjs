@@ -1,0 +1,23 @@
+const path = require('path');
+const os = require('os');
+const { chromium } = require(path.join(os.homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));
+const fs = require('fs');
+(async () => {
+  const browser = await chromium.launch({ executablePath: path.join(process.env.PROGRAMFILES || 'C:/Program Files', 'Google/Chrome/Application/chrome.exe'), headless: true, args: ['--no-sandbox'] });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  page.on('console', m => { if(m.type() === 'error') errors.push(m.text()); });
+  await page.goto('http://127.0.0.1:8095');
+  await page.waitForTimeout(12000);
+  const accessibility = page.locator('flt-semantics-placeholder');
+  if (await accessibility.count()) await accessibility.evaluate(e => e.click());
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: 'artifacts/desktop.png', fullPage: true });
+  fs.writeFileSync('artifacts/browser-state.txt', await page.locator('body').innerText());
+  console.log(JSON.stringify({ title: await page.title(), errors, body: (await page.locator('body').innerText()).slice(0, 2000) }));
+  await page.setViewportSize({width: 390, height: 844});
+  await page.waitForTimeout(1000);
+  await page.screenshot({path: 'artifacts/mobile.png', fullPage: true});
+  await browser.close();
+})().catch(e => { console.error(e); process.exit(1); });
