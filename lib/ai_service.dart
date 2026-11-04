@@ -5,7 +5,11 @@ import 'domain.dart';
 class AiService {
   String provider = 'OpenAI', key = '', model = 'gpt-4.1-mini';
   bool get isLive => key.trim().isNotEmpty;
-  Future<Map<String, dynamic>> ask(String instructions, String input) async {
+  Future<Map<String, dynamic>> ask(
+    String instructions,
+    String input, {
+    Duration timeout = const Duration(seconds: 40),
+  }) async {
     final uri = provider == 'OpenAI'
         ? Uri.https('api.openai.com', '/v1/responses')
         : Uri.https(
@@ -52,7 +56,7 @@ class AiService {
                   },
           ),
         )
-        .timeout(const Duration(seconds: 40));
+        .timeout(timeout);
     if (response.statusCode != 200) {
       throw Exception(
         'AI request failed (${response.statusCode}). Check your key, model, and connection.',

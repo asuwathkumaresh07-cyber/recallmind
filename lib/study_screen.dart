@@ -197,7 +197,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
             padding: const EdgeInsets.only(right: 20),
             child: Center(
               child: BadgeLabel(
-                ref.read(aiProvider).isLive ? 'LIVE AI' : 'OFFLINE DEMO',
+                ref.read(aiProvider).isLive ? 'LIVE AI' : 'LOCAL PRACTICE',
               ),
             ),
           ),
@@ -381,7 +381,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
         const Padding(
           padding: EdgeInsets.only(bottom: 12),
           child: Text(
-            'Practice demo · Connect AI in Settings for adaptive follow-ups and mastery assessment.',
+            'Connect AI in Settings for adaptive follow-ups and mastery assessment. Local practice does not award conversational mastery.',
             style: TextStyle(fontSize: 11, color: muted),
           ),
         ),

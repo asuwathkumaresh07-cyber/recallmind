@@ -23,6 +23,10 @@ void main() {
       final dir = await Directory.systemTemp.createTemp('recallmind-test-');
       final file = File('${dir.path}/study.sqlite');
       var db = StudyDatabase.withExecutor(NativeDatabase(file));
+      await db.load();
+      for (final card in seedCards) {
+        await db.save(card);
+      }
       final cards = await db.load();
       final reviewed = cards.first.review(4);
       await db.record(reviewed, 4);
@@ -56,7 +60,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('A little progress, every day.'), findsOneWidget);
+    expect(find.text('Your material. Your study plan.'), findsOneWidget);
     expect(tester.takeException(), isNull);
     tester.view.physicalSize = const Size(390, 844);
     await tester.pumpAndSettle();
@@ -78,6 +82,9 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final db = StudyDatabase.withExecutor(NativeDatabase.memory());
       await db.load();
+      for (final card in seedCards) {
+        await db.save(card);
+      }
       addTearDown(db.close);
       await tester.pumpWidget(
         ProviderScope(

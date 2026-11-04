@@ -5,6 +5,7 @@ import 'domain.dart';
 import 'state.dart';
 import 'study_screen.dart';
 import 'knowledge_map.dart';
+import 'learning_screen.dart';
 
 const ink = Color(0xFF202B28),
     green = Color(0xFF287858),
@@ -77,7 +78,7 @@ class Dashboard extends ConsumerStatefulWidget {
 }
 
 class _DashboardState extends ConsumerState<Dashboard> {
-  int page = 0;
+  int page = 6;
   String filter = 'All subjects', query = '';
   final names = [
     'Overview',
@@ -86,6 +87,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
     'Teach it back',
     'Knowledge map',
     'Insights',
+    'My materials',
   ];
   final icons = [
     Icons.grid_view_rounded,
@@ -94,6 +96,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
     Icons.forum_outlined,
     Icons.hub_outlined,
     Icons.bar_chart_rounded,
+    Icons.description_outlined,
   ];
   void start(List<StudyCard> cards, {bool teach = false}) {
     if (cards.isEmpty) {
@@ -294,7 +297,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    for (int i = 0; i < names.length; i++)
+                    for (final i in [6, 0, 1, 2, 3, 4, 5])
                       Padding(
                         padding: const EdgeInsets.only(bottom: 7),
                         child: Material(
@@ -455,6 +458,18 @@ class _DashboardState extends ConsumerState<Dashboard> {
     ),
   );
   Widget content(List<StudyCard> cards, double width) {
+    if (page == 6) {
+      return LearningWorkspace(
+        onSettings: settings,
+        onPractice: (generated) {
+          final current = ref.read(studyProvider).value ?? [];
+          start([
+            for (final card in generated)
+              current.where((c) => c.id == card.id).firstOrNull ?? card,
+          ]);
+        },
+      );
+    }
     final due = cards.where((c) => !c.due.isAfter(DateTime.now())).toList();
     final history = ref.watch(historyProvider).value ?? [];
     final successes = history.where((r) => (r['quality'] as int) >= 3).length;
@@ -666,15 +681,9 @@ class _DashboardState extends ConsumerState<Dashboard> {
                 value: filter,
                 underline: const SizedBox(),
                 style: const TextStyle(fontSize: 11, color: muted),
-                items:
-                    [
-                          'All subjects',
-                          'Biology',
-                          'Computer Science',
-                          'Mathematics',
-                        ]
-                        .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                        .toList(),
+                items: ['All subjects', ...cards.map((c) => c.deck).toSet()]
+                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                    .toList(),
                 onChanged: (v) => setState(() => filter = v!),
               ),
             ],
@@ -1135,46 +1144,48 @@ class _DashboardState extends ConsumerState<Dashboard> {
           title: const Text('Your study companion'),
           content: SizedBox(
             width: 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Without a key, RecallMind uses an offline practice demo. Live AI is needed to assess teach-it-back mastery.',
-                  style: TextStyle(color: muted, height: 1.6),
-                ),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<String>(
-                  initialValue: provider,
-                  items: ['OpenAI', 'Gemini']
-                      .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                      .toList(),
-                  onChanged: (p) => update(() {
-                    provider = p!;
-                    model.text = p == 'Gemini'
-                        ? 'gemini-2.5-flash'
-                        : 'gpt-4.1-mini';
-                  }),
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: model,
-                  decoration: const InputDecoration(labelText: 'Model'),
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: key,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'API key · held in memory only',
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Connect AI to follow custom instructions for your uploaded material. Without a key, source extraction creates reading plans, excerpts, and recall exercises. AI is required for conversational mastery assessment.',
+                    style: TextStyle(color: muted, height: 1.6),
                   ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Live mode sends concept and review context to your selected provider. Keys are cleared when the app closes.',
-                  style: TextStyle(fontSize: 11, color: muted),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField<String>(
+                    initialValue: provider,
+                    items: ['OpenAI', 'Gemini']
+                        .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                        .toList(),
+                    onChanged: (p) => update(() {
+                      provider = p!;
+                      model.text = p == 'Gemini'
+                          ? 'gemini-2.5-flash'
+                          : 'gpt-4.1-mini';
+                    }),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: model,
+                    decoration: const InputDecoration(labelText: 'Model'),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: key,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'API key · held in memory only',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'AI generation sends your notes and instructions to the selected provider. Keys stay in memory and are cleared when the app closes.',
+                    style: TextStyle(fontSize: 11, color: muted),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [

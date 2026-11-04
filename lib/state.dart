@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'domain.dart';
 import 'database.dart';
 import 'ai_service.dart';
+import 'learning_models.dart';
 
 final aiProvider = Provider((ref) => AiService());
 final databaseProvider = Provider((ref) {
@@ -16,6 +17,9 @@ final historyProvider = FutureProvider((ref) async {
   ref.watch(studyProvider);
   return ref.read(databaseProvider).history();
 });
+final learningSetsProvider = FutureProvider<List<LearningSet>>(
+  (ref) => ref.read(databaseProvider).learningSets(),
+);
 
 class StudyController extends AsyncNotifier<List<StudyCard>> {
   @override
